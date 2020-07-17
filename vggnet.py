@@ -11,10 +11,10 @@ cfg = {
 
 
 class VGG(nn.Module):
-    def __init__(self, vgg_name, actf='fourier'):
+    def __init__(self, vgg_name, in_channels=1, actf='fourier', classnum=10):
         super(VGG, self).__init__()
 
-        self.in_channels = 3
+        self.in_channels = in_channels
 
         self.conv1 = nn.Conv2d(self.in_channels, 64, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(64)
@@ -29,13 +29,16 @@ class VGG(nn.Module):
         # self.fouriers = [Fourier()] * 20
 
         self.features = self._make_layers(cfg[vgg_name])
-        self.classifier = nn.Linear(512, 10)
+        self.classifier = nn.Linear(512, classnum)
 
         self.model = vgg_name + '_' + actf
         # self.softmax=nn.Softmax()
 
+        self.fc1 = nn.Linear(7680, 512)
+
     def forward(self, x):
         # layer1
+        # print(x.size())
         out = self.conv1(x)
         out = self.bn1(out)
         if 'fourier' in self.model:
@@ -44,7 +47,10 @@ class VGG(nn.Module):
             out = self.relu(out)
         # others
         out = self.features(out)
+
         out = out.view(out.size(0), -1)
+
+        out = self.fc1(out)
         out = self.classifier(out)
         # out=self.softmax(out)
         return out
@@ -97,17 +103,17 @@ class VGG(nn.Module):
         return nn.Sequential(*layers)
 
 
-def VGG11(actf='fourier'):
-    return VGG('VGG11', actf)
+def VGG11(in_channels=1, actf='fourier', classnum=30):
+    return VGG('VGG11', in_channels, actf, classnum)
 
 
-def VGG13(actf='fourier'):
-    return VGG('VGG13', actf)
+def VGG13(in_channels=1, actf='fourier', classnum=30):
+    return VGG('VGG13', in_channels, actf, classnum)
 
 
-def VGG16(actf='fourier'):
-    return VGG('VGG16', actf)
+def VGG16(in_channels=1, actf='fourier', classnum=30):
+    return VGG('VGG16', in_channels, actf, classnum)
 
 
-def VGG19(actf='fourier'):
-    return VGG('VGG19', actf)
+def VGG19(in_channels=1, actf='fourier', classnum=30):
+    return VGG('VGG19', in_channels, actf, classnum)
