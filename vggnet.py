@@ -20,7 +20,7 @@ class VGG(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
 
         if actf == 'fourier':
-            self.fourier = Fourier(N=30)
+            self.fourier = Fourier(N=10)
         else:
             self.relu = nn.ReLU(inplace=True)
 
@@ -33,8 +33,9 @@ class VGG(nn.Module):
 
         self.model = vgg_name + '_' + actf
         # self.softmax=nn.Softmax()
-
         self.fc1 = nn.Linear(7680, 512)
+
+        print(self.model)
 
     def forward(self, x):
         # layer1

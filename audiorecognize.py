@@ -19,11 +19,10 @@ from googlenet import GoogLeNet
 from gcommand_loader import GCommandLoader
 
 lr = 0.01  # 学习率
-momentum = 0.5
 log_interval = 100  # 跑多少次batch进行一次日志记录
-epochs = 30
-batch_size = 64
-test_batch_size = 64
+epochs = 10
+batch_size = 16
+test_batch_size = 8
 
 
 class Config():
@@ -49,13 +48,21 @@ test_loader = torch.utils.data.DataLoader(  # 加载训练数据
 
 def train(epoch):  # 定义每个epoch的训练细节
     model.train()  # 设置为trainning模式
+    correct = 0.0
+    train_loss = 0.0
     for batch_idx, (data, target) in enumerate(train_loader):
         data = data.to(device)
         target = target.to(device)
+
         data, target = Variable(data), Variable(target)  # 把数据转换成Variable
         optimizer.zero_grad()  # 优化器梯度初始化为零
         output = model(data)  # 把数据输入网络并得到输出，即进行前向传播
         loss = F.cross_entropy(output, target)  # 交叉熵损失函数
+
+        train_loss += F.cross_entropy(output, target, size_average=False).item()  # sum up batch loss 把所有loss值进行累加
+
+        pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
+        correct += pred.eq(target.data.view_as(pred)).cpu().sum()  # 对预测正确的数据个数进行累加
 
         loss.backward()  # 反向传播梯度
         optimizer.step()  # 结束一次前传+反传之后，更新参数
@@ -64,8 +71,12 @@ def train(epoch):  # 定义每个epoch的训练细节
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss.item()))
 
+    print(correct / len(train_loader.dataset))
+    print(train_loss / len(train_loader.dataset))
+
 
 def test():
+    # with torch.no_grad():
     model.eval()  # 设置为test模式
     test_loss = 0  # 初始化测试损失值为0
     correct = 0  # 初始化预测正确的数据个数为0
@@ -93,8 +104,8 @@ if __name__ == '__main__':
     # model = ResNet18(actf='fourier')  # 实例化一个网络对象
     # model = ResNet18(actf='relu')  # 实例化一个网络对象
 
-    # model = VGG11(actf='fourier')  # 实例化一个网络对象
-    model = VGG11(in_channels=1, actf='relu', classnum=30)  # 实例化一个网络对象
+    model = VGG11(in_channels=1, actf='fourier', classnum=30)  # 实例化一个网络对象
+    # model = VGG11(in_channels=1, actf='relu', classnum=30)  # 实例化一个网络对象
 
     model = model.to(device)
 
@@ -106,11 +117,11 @@ if __name__ == '__main__':
 
     torch.save(model, '../models/' + model.model + '.pth')  # 保存模型
     #
-    # print('fourier')
-    # print('A:', model.fourier.A.data)
-    # print('B:', model.fourier.B.data)
-    # print('a0:', model.fourier.a0.data)
-    # print('w:', model.fourier.w.data)
+    print('fourier')
+    print('A:', model.fourier.A.data)
+    print('B:', model.fourier.B.data)
+    print('a0:', model.fourier.a0.data)
+    print('w:', model.fourier.w.data)
 
     # print('sin')
     # print('A:', model.sin.A.data)

@@ -63,7 +63,7 @@ def test():
 
 
 if __name__ == '__main__':
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # 启用GPU
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')  # 启用GPU
     # device=torch.device('cpu')
     train_loader = torch.utils.data.DataLoader(  # 加载训练数据
         datasets.CIFAR10('../data', train=True, download=True,
@@ -85,8 +85,8 @@ if __name__ == '__main__':
         batch_size=test_batch_size, shuffle=True)
 
     # model = GoogLeNet()  # 实例化一个网络对象
-    # model = ResNet18(actf='fourier')  # 实例化一个网络对象
-    model = ResNet18(actf='relu')  # 实例化一个网络对象
+    model = VGG11(in_channels=3, actf='fourier', classnum=10)
+    # model = ResNet18(actf='relu')  # 实例化一个网络对象
 
     # model = VGG11(actf='fourier')  # 实例化一个网络对象
     # model = VGG11(actf='relu')  # 实例化一个网络对象
